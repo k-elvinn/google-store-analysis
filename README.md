@@ -1,3 +1,13 @@
+# IoT-Платформа управления сетью быстрых зарядных станций для электромобилей (EV Charging Network)
+
+Пет-проект, демонстрирующий навыки сквозной аналитики: от проектирования бизнес-процессов (BPMN) и системного взаимодействия (UML) до продуктового анализа данных.
+
+---
+
+## 1. Бизнес-анализ (BPMN 2.0)
+
+Проектирование бизнес-процесса **«Зарядка электромобиля с динамическим ценообразованием и обработкой инцидентов»**. Схема учитывает пиковые часы (Surge Pricing), ограничение времени на подключение кабеля и аварийный сценарий при перегреве коннектора.
+
 ```mermaid
 graph TD
     %% Описание узлов и связей
@@ -31,7 +41,7 @@ graph TD
     T10 --> T11[Списать деньги / Снять блок остатка]
     T11 --> End((Успешный финал))
 
-    %% НАСТРОЙКА ЯРКИХ КОНТРАСТНЫХ СТИЛЕЙ
+    %% Настройка ярких контрастных стилей
     classDef startEnd fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff,font-weight:bold;
     classDef task fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff,font-weight:bold;
     classDef gateway fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:#000,font-weight:bold;
@@ -42,47 +52,3 @@ graph TD
     class T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11 task;
     class G1,G2,G3,G4 gateway;
     class E1,E2 error;
-
-    ## 2. Системный анализ (UML Sequence)
-
-Проектирование процесса авторизации пользователя, проверки баланса и отправки команды на запуск физического коннектора по протоколу OCPP (Open Charge Point Protocol).
-
-```mermaid
-sequenceDiagram
-    autonumber
-    
-    actor Клиент as Водитель (App)
-    participant App as Мобильное приложение
-    participant Backend as Бэкенд Платформы
-    participant Billing as Модуль Биллинга
-    participant Station as Зарядная Станция (IoT)
-
-    %% Сценарий старта сессии
-    Клиент->>App: Нажимает "Начать зарядку"
-    App->>Backend: POST /api/v1/charging/start<br/>{station_id, connector_id}
-    
-    activate Backend
-    Backend->>Billing: Проверить лимит и заблокировать 500 руб.<br/>{user_id, amount: 500}
-    activate Billing
-    
-    alt Баланс положительный
-        Billing-->>Backend: 200 OK (Средства захолдированы)
-        deactivate Billing
-        
-        %% Запрос к железке по OCPP
-        Backend->>Station: Команда: RemoteStartTransaction(connector_id)
-        activate Station
-        Station-->>Backend: Статус: Accepted (Кабель заблокирован, ток пошел)
-        deactivate Station
-        
-        Backend-->>App: HTTP 200 OK<br/>{session_id, status: "Charging"}
-        App-->>Клиент: Экран: "Зарядка успешно запущена"
-        
-    else Недостаточно средств
-        activate Billing
-        Billing-->>Backend: HTTP 402 Payment Required (Отказ)
-        deactivate Billing
-        Backend-->>App: HTTP 400 Bad Request<br/>{error: "Insufficient funds"}
-        App-->>Клиент: Экран: "Пополните баланс"
-    end
-    deactivate Backend
