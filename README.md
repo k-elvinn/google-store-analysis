@@ -42,3 +42,47 @@ graph TD
     class T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11 task;
     class G1,G2,G3,G4 gateway;
     class E1,E2 error;
+
+    ## 2. Системный анализ (UML Sequence)
+
+Проектирование процесса авторизации пользователя, проверки баланса и отправки команды на запуск физического коннектора по протоколу OCPP (Open Charge Point Protocol).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    
+    actor Клиент as Водитель (App)
+    participant App as Мобильное приложение
+    participant Backend as Бэкенд Платформы
+    participant Billing as Модуль Биллинга
+    participant Station as Зарядная Станция (IoT)
+
+    %% Сценарий старта сессии
+    Клиент->>App: Нажимает "Начать зарядку"
+    App->>Backend: POST /api/v1/charging/start<br/>{station_id, connector_id}
+    
+    activate Backend
+    Backend->>Billing: Проверить лимит и заблокировать 500 руб.<br/>{user_id, amount: 500}
+    activate Billing
+    
+    alt Баланс положительный
+        Billing-->>Backend: 200 OK (Средства захолдированы)
+        deactivate Billing
+        
+        %% Запрос к железке по OCPP
+        Backend->>Station: Команда: RemoteStartTransaction(connector_id)
+        activate Station
+        Station-->>Backend: Статус: Accepted (Кабель заблокирован, ток пошел)
+        deactivate Station
+        
+        Backend-->>App: HTTP 200 OK<br/>{session_id, status: "Charging"}
+        App-->>Клиент: Экран: "Зарядка успешно запущена"
+        
+    else Недостаточно средств
+        activate Billing
+        Billing-->>Backend: HTTP 402 Payment Required (Отказ)
+        deactivate Billing
+        Backend-->>App: HTTP 400 Bad Request<br/>{error: "Insufficient funds"}
+        App-->>Клиент: Экран: "Пополните баланс"
+    end
+    deactivate Backend
