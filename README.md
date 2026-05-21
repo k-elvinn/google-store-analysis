@@ -31,11 +31,11 @@ graph TD
     T10 --> T11[Списать деньги / Снять блок остатка]
     T11 --> End((Успешный финал))
 
-    %% Кастомные стили (классы)
-    classDef startEnd fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    classDef task fill:#cfe2ff,stroke:#0d6efd,stroke-width:1px;
-    classDef gateway fill:#fff3cd,stroke:#ffc107,stroke-width:1px;
-    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:1px;
+    %% НАСТРОЙКА ЯРКИХ КОНТРАСТНЫХ СТИЛЕЙ
+    classDef startEnd fill:#2ecc71,stroke:#27ae60,stroke-width:3px,color:#fff,font-weight:bold;
+    classDef task fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff,font-weight:bold;
+    classDef gateway fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:#000,font-weight:bold;
+    classDef error fill:#e74c3c,stroke:#c0392b,stroke-width:3px,color:#fff,font-weight:bold;
 
     %% Привязка стилей к узлам
     class Start,End startEnd;
